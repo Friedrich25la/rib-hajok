@@ -6,13 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trinexus RIB-hajók</title>
   <style>
-    /* --- ALAP STÍLUSOK (EGYESÍTVE) --- */
+    /* --- ALAP STÍLUSOK --- */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    /* Ez segít a böngészőnek, hogy tudja, ez egy szám */
     @property --progress-scroll {
       syntax: "<number>";
       inherits: true;
@@ -23,35 +24,29 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #0a5565;
       color: white;
-      /* Fontos: A 'width: 100vw' okozta túlfolyás miatt
-               a body-ra is kell egy 'overflow-x: hidden',
-               hogy a sticky wrapper ne okozzon görgetősávot.
-               De a jobb megoldás a 100% használata.
-            */
+      /* Reszponzív javítás */
+      overflow-x: hidden;
     }
 
-    /* --- 1. RÉSZ: BEVEZETŐ ANIMÁCIÓ STÍLUSAI --- */
+    /* --- 1. RÉSZ: BEVEZETŐ STÍLUSAI (SAFARI JAVÍTOTT) --- */
 
     .intro-container {
       height: 300vh;
+      /* Hosszú pálya a görgetéshez */
     }
 
     .sticky-wrapper {
       position: sticky;
       top: 0;
       height: 100vh;
-
-      /* === MÓDOSÍTÁS 1. ===
-             * A 'width: 100vw' vízszintes görgetősávot okozott,
-             * mert nem vette figyelembe a függőleges sáv szélességét.
-             * A 'width: 100%' a helyes, reszponzív megoldás.
-            */
       width: 100%;
-
+      /* Javítva 100vw-ről */
       overflow: hidden;
-      animation: portal 1ms linear forwards;
-      animation-timeline: scroll();
-      animation-range: 0vh 100vh;
+
+      /* === SAFARI JAVÍTÁS ===
+             * Kivettük innen a CSS animation-timeline sorokat.
+             * Ezt mostantól a JavaScript vezérli lent.
+             */
     }
 
     .text-container {
@@ -78,7 +73,9 @@
     }
 
     .text {
+      /* Itt használjuk a JS által számolt értéket */
       --offset-x-base: calc(100% * var(--progress-scroll));
+
       font-size: clamp(1.2rem, 5vw, 2.5rem);
       font-weight: 900;
       position: relative;
@@ -101,16 +98,8 @@
       transform: translateX(var(--offset-x));
       width: 100%;
       display: inline-block;
-    }
-
-    @keyframes portal {
-      from {
-        --progress-scroll: 0;
-      }
-
-      to {
-        --progress-scroll: 1;
-      }
+      /* Finomítás: hardveres gyorsítás a simább animációért */
+      will-change: transform;
     }
 
     /* --- 2. RÉSZ: LANDING PAGE (SLIDER) STÍLUSAI --- */
@@ -151,6 +140,7 @@
       text-decoration: none;
       cursor: pointer;
       transition: opacity 0.18s ease;
+      pointer-events: auto;
     }
 
     .now-showing a:hover,
@@ -536,33 +526,25 @@
         position: static;
       }
 
-      /* === MÓDOSÍTÁS 2. ===
-             * Javítás mobil (főleg fekvő) nézethez,
-             * hogy a tartalom ne csússzon ki a képernyőből.
-            */
+      /* Mobil javítások a fekvő nézethez */
       .slide-content {
         bottom: 20px;
-        /* Csökkentett pozíció */
         left: 20px;
         right: 20px;
         padding: 8px;
-        /* Kisebb padding */
       }
 
       .slide.active .slide-content {
         bottom: 20px;
-        /* Ugyanaz marad aktívan is */
       }
 
       .car-name {
         font-size: 20px;
-        /* Kisebb címsor */
         margin-bottom: 4px;
       }
 
       .car-subtitle {
         font-size: 14px;
-        /* Kisebb alcím */
         margin-bottom: 10px;
       }
 
@@ -578,8 +560,6 @@
       .badge {
         font-size: 10px;
       }
-
-      /* === MÓDOSÍTÁS 2. VÉGE === */
     }
   </style>
 </head>
@@ -613,44 +593,28 @@
         <div class="slide-content">
           <div class="slide-number">01</div>
           <div class="car-brand">RIB 330</div>
-
           <div class="car-name">
             <a href="https://www.trinexus.hu/Dawn-Marine-RIB-330C" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 330C
             </a>
           </div>
-
           <div class="car-subtitle">Szállítható személyek száma: 4 fő</div>
           <div class="car-specs">
-            <div class="spec-row">
-              <span class="spec-label">Hosszúság:</span>
-              <span class="spec-value">330 cm</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Szélesség:</span>
-              <span class="spec-value">160 cm</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Max motor teljesítmény:</span>
-              <span class="spec-value">20 LE</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Trieb hossz:</span>
-              <span class="spec-value">rövid</span>
+            <div class="spec-row"><span class="spec-label">Hosszúság:</span><span class="spec-value">330 cm</span></div>
+            <div class="spec-row"><span class="spec-label">Szélesség:</span><span class="spec-value">160 cm</span></div>
+            <div class="spec-row"><span class="spec-label">Max motor:</span><span class="spec-value">20 LE</span></div>
+            <div class="spec-row"><span class="spec-label">Trieb hossz:</span><span class="spec-value">rövid</span>
             </div>
           </div>
           <div class="performance-badges">
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Súly: 100 kg</span>
+              <div class="badge-icon"></div><span>Súly: 100 kg</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Anyaga: 1,2 mm PVCA</span>
+              <div class="badge-icon"></div><span>Anyaga: 1,2 mm PVCA</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Ára: 1.769.900 Ft</span>
+              <div class="badge-icon"></div><span>Ára: 1.769.900 Ft</span>
             </div>
           </div>
         </div>
@@ -662,44 +626,28 @@
         <div class="slide-content">
           <div class="slide-number">02</div>
           <div class="car-brand">RIB 390</div>
-
           <div class="car-name">
             <a href="https://www.trinexus.hu/Dawn-Marine-RIB-390C-feher" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 390C Teak
             </a>
           </div>
-
           <div class="car-subtitle">Szállítható személyek száma: 5 fő</div>
           <div class="car-specs">
-            <div class="spec-row">
-              <span class="spec-label">Hosszúság:</span>
-              <span class="spec-value">390 cm</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Szélesség:</span>
-              <span class="spec-value">177 cm</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Max motor teljesítmény:</span>
-              <span class="spec-value">30 LE</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Trieb hossz:</span>
-              <span class="spec-value">rövid</span>
+            <div class="spec-row"><span class="spec-label">Hosszúság:</span><span class="spec-value">390 cm</span></div>
+            <div class="spec-row"><span class="spec-label">Szélesség:</span><span class="spec-value">177 cm</span></div>
+            <div class="spec-row"><span class="spec-label">Max motor:</span><span class="spec-value">30 LE</span></div>
+            <div class="spec-row"><span class="spec-label">Trieb hossz:</span><span class="spec-value">rövid</span>
             </div>
           </div>
           <div class="performance-badges">
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Súly: 110 kg</span>
+              <div class="badge-icon"></div><span>Súly: 110 kg</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Anyaga: 1,2 mm PVCA</span>
+              <div class="badge-icon"></div><span>Anyaga: 1,2 mm PVCA</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Ára: 3.499.000 Ft</span>
+              <div class="badge-icon"></div><span>Ára: 3.499.000 Ft</span>
             </div>
           </div>
         </div>
@@ -710,44 +658,28 @@
         <div class="slide-content">
           <div class="slide-number">03</div>
           <div class="car-brand">RIB 390</div>
-
           <div class="car-name">
             <a href="https://www.trinexus.hu/spd/832390/Dawn-Marine-RIB-390C-fekete-feher" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 390C fekete-fehér
             </a>
           </div>
-
           <div class="car-subtitle">Szállítható személyek száma: 5 fő</div>
           <div class="car-specs">
-            <div class="spec-row">
-              <span class="spec-label">Hosszúság:</span>
-              <span class="spec-value">390 cm</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Szélesség:</span>
-              <span class="spec-value">177 cm</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Max motor teljesítmény:</span>
-              <span class="spec-value">30 LE</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Trieb hossz:</span>
-              <span class="spec-value">rövid</span>
+            <div class="spec-row"><span class="spec-label">Hosszúság:</span><span class="spec-value">390 cm</span></div>
+            <div class="spec-row"><span class="spec-label">Szélesség:</span><span class="spec-value">177 cm</span></div>
+            <div class="spec-row"><span class="spec-label">Max motor:</span><span class="spec-value">30 LE</span></div>
+            <div class="spec-row"><span class="spec-label">Trieb hossz:</span><span class="spec-value">rövid</span>
             </div>
           </div>
           <div class="performance-badges">
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Súly: 110 kg</span>
+              <div class="badge-icon"></div><span>Súly: 110 kg</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Anyaga: 1,2 mm PVCA</span>
+              <div class="badge-icon"></div><span>Anyaga: 1,2 mm PVCA</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Ára: 2.799.000 Ft</span>
+              <div class="badge-icon"></div><span>Ára: 2.799.000 Ft</span>
             </div>
           </div>
         </div>
@@ -762,42 +694,25 @@
         <div class="slide-content">
           <div class="slide-number">04</div>
           <div class="car-brand">RIB 520</div>
-
           <div class="car-name">
             <a href="https://www.trinexus.hu/Dawn-Marine-RIB-520E" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 520E Teak
             </a>
           </div>
-
           <div class="car-subtitle">Szállítható személyek száma: 8 fő</div>
-          <div class="spec-row">
-            <span class="spec-label">Hosszúság:</span>
-            <span class="spec-value">520 cm</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-label">Szélesség:</span>
-            <span class="spec-value">225 cm</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-label">Max motor teljesítmény:</span>
-            <span class="spec-value">115 LE</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-label">Trieb hossz:</span>
-            <span class="spec-value">hosszú</span>
-          </div>
+          <div class="spec-row"><span class="spec-label">Hosszúság:</span><span class="spec-value">520 cm</span></div>
+          <div class="spec-row"><span class="spec-label">Szélesség:</span><span class="spec-value">225 cm</span></div>
+          <div class="spec-row"><span class="spec-label">Max motor:</span><span class="spec-value">115 LE</span></div>
+          <div class="spec-row"><span class="spec-label">Trieb hossz:</span><span class="spec-value">hosszú</span></div>
           <div class="performance-badges">
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Súly: 420 kg</span>
+              <div class="badge-icon"></div><span>Súly: 420 kg</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Anyaga: 1,2 mm PVCA</span>
+              <div class="badge-icon"></div><span>Anyaga: 1,2 mm PVCA</span>
             </div>
             <div class="badge">
-              <div class="badge-icon"></div>
-              <span>Ára: 5.899.900 Ft</span>
+              <div class="badge-icon"></div><span>Ára: 5.899.900 Ft</span>
             </div>
           </div>
         </div>
@@ -810,6 +725,26 @@
   </div>
 
   <script>
+    // === BEVEZETŐ ANIMÁCIÓ JS (SAFARI JAVÍTÁS) ===
+    // Ez helyettesíti a nem támogatott CSS scroll-timeline-t.
+    document.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      // Az animáció az első 100vh görgetés alatt történjen meg
+      // (Mivel a sticky elem 100vh magas, a pálya 300vh)
+
+      // 0 és 1 közötti értéket számolunk a görgetés alapján
+      let progress = scrollTop / windowHeight;
+
+      // Biztosítjuk, hogy 0 és 1 között maradjon
+      if (progress < 0) progress = 0;
+      if (progress > 1) progress = 1;
+
+      // Beállítjuk a CSS változót, amit a szövegek figyelnek
+      document.body.style.setProperty('--progress-scroll', progress);
+    });
+
+    // === SLIDER JS (VÁLTOZATLAN) ===
     class AccordionSlider {
       constructor() {
         this.slides = document.querySelectorAll(".slide");
@@ -824,7 +759,6 @@
         this.slides.forEach((slide, index) => {
           slide.addEventListener("click", (e) => {
             if (e.target.closest('.add-button')) return;
-
             this.setActiveSlide(index);
           });
         });
