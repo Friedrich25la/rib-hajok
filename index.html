@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trinexus RIB-hajók</title>
+  <style>
+    /* --- ALAP STÍLUSOK (EGYESÍTVE) --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @property --progress-scroll {
+      syntax: "<number>";
+      inherits: true;
+      initial-value: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0a5565;
+      color: white;
+      /* Fontos: A 'width: 100vw' okozta túlfolyás miatt
+               a body-ra is kell egy 'overflow-x: hidden',
+               hogy a sticky wrapper ne okozzon görgetősávot.
+               De a jobb megoldás a 100% használata.
+            */
+    }
+
+    /* --- 1. RÉSZ: BEVEZETŐ ANIMÁCIÓ STÍLUSAI --- */
+
+    .intro-container {
+      height: 300vh;
+    }
+
+    .sticky-wrapper {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+
+      /* === MÓDOSÍTÁS 1. ===
+             * A 'width: 100vw' vízszintes görgetősávot okozott,
+             * mert nem vette figyelembe a függőleges sáv szélességét.
+             * A 'width: 100%' a helyes, reszponzív megoldás.
+            */
+      width: 100%;
+
+      overflow: hidden;
+      animation: portal 1ms linear forwards;
+      animation-timeline: scroll();
+      animation-range: 0vh 100vh;
+    }
+
+    .text-container {
+      position: relative;
+      width: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .portal {
+      width: 5vw;
+      height: clamp(200px, 30vh, 600px);
+    }
+
+    .portal.portal--from {
+      border-left: 3px solid orange;
+    }
+
+    .portal.portal--to {
+      border-right: 3px solid blue;
+    }
+
+    .text {
+      --offset-x-base: calc(100% * var(--progress-scroll));
+      font-size: clamp(1.2rem, 5vw, 2.5rem);
+      font-weight: 900;
+      position: relative;
+      text-transform: uppercase;
+      text-align: center;
+      overflow: hidden;
+      width: 90vw;
+      max-width: 800px;
+    }
+
+    .text.text--a {
+      --offset-x: var(--offset-x-base);
+    }
+
+    .text.text--b {
+      --offset-x: calc(-100% + var(--offset-x-base));
+    }
+
+    .text-inner {
+      transform: translateX(var(--offset-x));
+      width: 100%;
+      display: inline-block;
+    }
+
+    @keyframes portal {
+      from {
+        --progress-scroll: 0;
+      }
+
+      to {
+        --progress-scroll: 1;
+      }
+    }
+
+    /* --- 2. RÉSZ: LANDING PAGE (SLIDER) STÍLUSAI --- */
+
+    .slider-container {
+      width: 100%;
+      max-width: 1200px;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      margin: auto;
+    }
+
+    .now-showing {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: hsl(0, 0%, 96%);
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .now-showing::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: #fafbfb;
+      border-radius: 50%;
+    }
+
+    .now-showing a {
+      color: #ffffff;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.18s ease;
+    }
+
+    .now-showing a:hover,
+    .now-showing a:focus {
+      opacity: 0.92;
+      text-decoration: none;
+    }
+
+    .accordion-slider {
+      display: flex;
+      height: 100%;
+      position: relative;
+    }
+
+    .slide {
+      flex: 1;
+      position: relative;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      filter: grayscale(0.2);
+      min-width: 0;
+    }
+
+    .slide:hover {
+      filter: grayscale(0);
+    }
+
+    .slide.active {
+      flex: 2.5;
+      filter: grayscale(0);
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 70%);
+      transition: background 0.5s ease;
+      pointer-events: none;
+    }
+
+    .slide.active::before {
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.55) 75%);
+    }
+
+    .slide-content {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      right: 30px;
+      color: white;
+      z-index: 2;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.0) 0%, rgba(0, 0, 0, 0.28) 100%);
+      padding: 12px;
+      border-radius: 6px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
+    }
+
+    .slide.active .slide-content {
+      bottom: 80px;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.36) 100%);
+    }
+
+    .slide-number {
+      font-size: 64px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1;
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      z-index: 3;
+    }
+
+    .slide.active .slide-number {
+      bottom: auto;
+      top: -50px;
+      font-size: 48px;
+      left: 0;
+    }
+
+    .slide-logo {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 110px;
+      height: auto;
+      z-index: 6;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      image-rendering: -webkit-optimize-contrast;
+    }
+
+    .car-brand {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 5px;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      position: absolute;
+      bottom: 100px;
+      left: 30px;
+      white-space: nowrap;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .slide.active .car-brand {
+      transform: rotate(0deg);
+      position: static;
+      transform-origin: unset;
+    }
+
+    .car-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0s;
+      color: #ffffff;
+      text-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
+    }
+
+    .car-name a {
+      text-decoration: none;
+      color: inherit;
+      pointer-events: auto;
+    }
+
+    .slide.active .car-name {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.3s;
+    }
+
+    .car-subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.92);
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0s;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .slide.active .car-subtitle {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.4s;
+    }
+
+    .car-specs {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0s;
+    }
+
+    .slide.active .car-specs {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.5s;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide.active .spec-row {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .slide.active .spec-row:nth-child(1) {
+      transition-delay: 0.6s;
+    }
+
+    .slide.active .spec-row:nth-child(2) {
+      transition-delay: 0.65s;
+    }
+
+    .slide.active .spec-row:nth-child(3) {
+      transition-delay: 0.7s;
+    }
+
+    .slide.active .spec-row:nth-child(4) {
+      transition-delay: 0.75s;
+    }
+
+    .spec-label {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .spec-value {
+      color: white;
+      font-weight: 600;
+    }
+
+    .performance-badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0s;
+    }
+
+    .slide.active .performance-badges {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.8s;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide.active .badge {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .slide.active .badge:nth-child(1) {
+      transition-delay: 0.85s;
+    }
+
+    .slide.active .badge:nth-child(2) {
+      transition-delay: 0.9s;
+    }
+
+    .slide.active .badge:nth-child(3) {
+      transition-delay: 0.95s;
+    }
+
+    .badge-icon {
+      width: 8px;
+      height: 8px;
+      background: #369999;
+      border-radius: 50%;
+    }
+
+    .add-button {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 2px solid #369999;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      z-index: 3;
+      pointer-events: auto;
+    }
+
+    .add-button::before,
+    .add-button::after {
+      content: "";
+      position: absolute;
+      background: #369999;
+      transition: all 0.4s ease;
+      left: 50%;
+      top: 50%;
+      transform-origin: center;
+    }
+
+    .add-button::before {
+      width: 12px;
+      height: 2px;
+      transform: translate(-50%, -50%);
+    }
+
+    .add-button::after {
+      width: 2px;
+      height: 12px;
+      transform: translate(-50%, -50%);
+    }
+
+    .slide.active .add-button::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .slide.active .add-button::after {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
+    }
+
+    .navigation-arrows {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 4;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-prev {
+      left: 20px;
+    }
+
+    .nav-next {
+      right: 20px;
+    }
+
+    .navigation-arrows:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .slide-logo {
+        width: 64px;
+        top: 8px;
+        right: 8px;
+      }
+
+      .accordion-slider {
+        flex-direction: column;
+      }
+
+      .slide {
+        flex: 1;
+        min-height: 80px;
+      }
+
+      .slide.active {
+        flex: 2;
+      }
+
+      .slide-number {
+        font-size: 32px;
+      }
+
+      .car-brand {
+        transform: none;
+        position: static;
+      }
+
+      /* === MÓDOSÍTÁS 2. ===
+             * Javítás mobil (főleg fekvő) nézethez,
+             * hogy a tartalom ne csússzon ki a képernyőből.
+            */
+      .slide-content {
+        bottom: 20px;
+        /* Csökkentett pozíció */
+        left: 20px;
+        right: 20px;
+        padding: 8px;
+        /* Kisebb padding */
+      }
+
+      .slide.active .slide-content {
+        bottom: 20px;
+        /* Ugyanaz marad aktívan is */
+      }
+
+      .car-name {
+        font-size: 20px;
+        /* Kisebb címsor */
+        margin-bottom: 4px;
+      }
+
+      .car-subtitle {
+        font-size: 14px;
+        /* Kisebb alcím */
+        margin-bottom: 10px;
+      }
+
+      .spec-row {
+        font-size: 12px;
+      }
+
+      .performance-badges {
+        margin-top: 10px;
+        gap: 8px;
+      }
+
+      .badge {
+        font-size: 10px;
+      }
+
+      /* === MÓDOSÍTÁS 2. VÉGE === */
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="intro-container">
+    <div class="sticky-wrapper">
+      <div class="text-container">
+        <div class="text text--a">
+          <div class="text-inner">RIB-hajók készleten a trinexusnál</div>
+        </div>
+        <div class="portal portal--from"></div>
+        <div class="portal portal--to"></div>
+        <div class="text text--b">
+          <div class="text-inner">tekintsék meg kínálatunkat!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slider-container">
+    <div class="now-showing">
+      <a href="https://www.trinexus.hu/hajo-rib-hajo" target="_blank" rel="noopener noreferrer">
+        A teljes kínálatért kattintson ide!
+      </a>
+    </div>
+    <div class="accordion-slider">
+      <div class="slide"
+        style="background-image: url('https://www.trinexus.hu/img/17496/831330C_altpic_6/831330C.webp?time=1702680608')">
+        <div class="slide-content">
+          <div class="slide-number">01</div>
+          <div class="car-brand">RIB 330</div>
+
+          <div class="car-name">
+            <a href="https://www.trinexus.hu/Dawn-Marine-RIB-330C" target="_blank" rel="noopener noreferrer" class="product-link">
+              Dawn Marine RIB 330C
+            </a>
+          </div>
+
+          <div class="car-subtitle">Szállítható személyek száma: 4 fő</div>
+          <div class="car-specs">
+            <div class="spec-row">
+              <span class="spec-label">Hosszúság:</span>
+              <span class="spec-value">330 cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Szélesség:</span>
+              <span class="spec-value">160 cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Max motor teljesítmény:</span>
+              <span class="spec-value">20 LE</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Trieb hossz:</span>
+              <span class="spec-value">rövid</span>
+            </div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Súly: 100 kg</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Anyaga: 1,2 mm PVCA</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Ára: 1.769.900 Ft</span>
+            </div>
+          </div>
+        </div>
+        <button class="add-button" aria-label="Add" type="button"></button>
+      </div>
+
+      <div class="slide"
+        style="background-image: url('https://www.trinexus.hu/img/17496/832390A_altpic_1/832390A.webp?time=1712923852')">
+        <div class="slide-content">
+          <div class="slide-number">02</div>
+          <div class="car-brand">RIB 390</div>
+
+          <div class="car-name">
+            <a href="https://www.trinexus.hu/Dawn-Marine-RIB-390C-feher" target="_blank" rel="noopener noreferrer" class="product-link">
+              Dawn Marine RIB 390C Teak
+            </a>
+          </div>
+
+          <div class="car-subtitle">Szállítható személyek száma: 5 fő</div>
+          <div class="car-specs">
+            <div class="spec-row">
+              <span class="spec-label">Hosszúság:</span>
+              <span class="spec-value">390 cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Szélesség:</span>
+              <span class="spec-value">177 cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Max motor teljesítmény:</span>
+              <span class="spec-value">30 LE</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Trieb hossz:</span>
+              <span class="spec-value">rövid</span>
+            </div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Súly: 110 kg</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Anyaga: 1,2 mm PVCA</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Ára: 3.499.000 Ft</span>
+            </div>
+          </div>
+        </div>
+        <button class="add-button" aria-label="Add" type="button"></button>
+      </div>
+
+      <div class="slide" style="background-image: url('https://www.trinexus.hu/img/17496/832390C/832390C.webp')">
+        <div class="slide-content">
+          <div class="slide-number">03</div>
+          <div class="car-brand">RIB 390</div>
+
+          <div class="car-name">
+            <a href="https://www.trinexus.hu/spd/832390/Dawn-Marine-RIB-390C-fekete-feher" target="_blank" rel="noopener noreferrer" class="product-link">
+              Dawn Marine RIB 390C fekete-fehér
+            </a>
+          </div>
+
+          <div class="car-subtitle">Szállítható személyek száma: 5 fő</div>
+          <div class="car-specs">
+            <div class="spec-row">
+              <span class="spec-label">Hosszúság:</span>
+              <span class="spec-value">390 cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Szélesség:</span>
+              <span class="spec-value">177 cm</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Max motor teljesítmény:</span>
+              <span class="spec-value">30 LE</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Trieb hossz:</span>
+              <span class="spec-value">rövid</span>
+            </div>
+          </div>
+          <div class="performance-badges">
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Súly: 110 kg</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Anyaga: 1,2 mm PVCA</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Ára: 2.799.000 Ft</span>
+            </div>
+          </div>
+        </div>
+        <button class="add-button" aria-label="Add" type="button"></button>
+      </div>
+
+      <div class="slide"
+        style="background-image: url('https://www.trinexus.hu/img/17496/835520/835520.webp?time=1703026237')">
+        <a href="https://www.trinexus.hu" target="_blank" rel="noopener" onclick="event.stopPropagation();">
+          <img class="slide-logo" src="logo2.png" alt="Trinexus logo">
+        </a>
+        <div class="slide-content">
+          <div class="slide-number">04</div>
+          <div class="car-brand">RIB 520</div>
+
+          <div class="car-name">
+            <a href="https://www.trinexus.hu/Dawn-Marine-RIB-520E" target="_blank" rel="noopener noreferrer" class="product-link">
+              Dawn Marine RIB 520E Teak
+            </a>
+          </div>
+
+          <div class="car-subtitle">Szállítható személyek száma: 8 fő</div>
+          <div class="spec-row">
+            <span class="spec-label">Hosszúság:</span>
+            <span class="spec-value">520 cm</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Szélesség:</span>
+            <span class="spec-value">225 cm</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Max motor teljesítmény:</span>
+            <span class="spec-value">115 LE</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Trieb hossz:</span>
+            <span class="spec-value">hosszú</span>
+          </div>
+          <div class="performance-badges">
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Súly: 420 kg</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Anyaga: 1,2 mm PVCA</span>
+            </div>
+            <div class="badge">
+              <div class="badge-icon"></div>
+              <span>Ára: 5.899.900 Ft</span>
+            </div>
+          </div>
+        </div>
+        <button class="add-button" aria-label="Add" type="button"></button>
+      </div>
+    </div>
+
+    <button class="navigation-arrows nav-prev" aria-label="Previous" type="button">‹</button>
+    <button class="navigation-arrows nav-next" aria-label="Next" type="button">›</button>
+  </div>
+
+  <script>
+    class AccordionSlider {
+      constructor() {
+        this.slides = document.querySelectorAll(".slide");
+        this.prevBtn = document.querySelector(".nav-prev");
+        this.nextBtn = document.querySelector(".nav-next");
+        this.currentIndex = -1;
+
+        this.init();
+      }
+
+      init() {
+        this.slides.forEach((slide, index) => {
+          slide.addEventListener("click", (e) => {
+            if (e.target.closest('.add-button')) return;
+
+            this.setActiveSlide(index);
+          });
+        });
+
+        this.prevBtn.addEventListener("click", () => this.previousSlide());
+        this.nextBtn.addEventListener("click", () => this.nextSlide());
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft") this.previousSlide();
+          if (e.key === "ArrowRight") this.nextSlide();
+        });
+      }
+
+      setActiveSlide(index) {
+        if (this.currentIndex === index) {
+          this.slides.forEach((slide) => slide.classList.remove("active"));
+          this.currentIndex = -1;
+        } else {
+          this.slides.forEach((slide) => slide.classList.remove("active"));
+          this.slides[index].classList.add("active");
+          this.currentIndex = index;
+        }
+      }
+
+      nextSlide() {
+        const nextIndex =
+          this.currentIndex === -1 ? 0 : (this.currentIndex + 1) % this.slides.length;
+        this.setActiveSlide(nextIndex);
+      }
+
+      previousSlide() {
+        const prevIndex =
+          this.currentIndex === -1
+            ? this.slides.length - 1
+            : (this.currentIndex - 1 + this.slides.length) % this.slides.length;
+        this.setActiveSlide(prevIndex);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      new AccordionSlider();
+
+      const logoAnchors = document.querySelectorAll('.slide > a[href="https://www.trinexus.hu"]');
+      logoAnchors.forEach(a => {
+        a.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+        });
+      });
+
+      const productLinks = document.querySelectorAll('.product-link');
+      productLinks.forEach(link => {
+        link.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+        });
+      });
+
+      const nowLink = document.querySelector('.now-showing a');
+      if (nowLink) {
+        nowLink.style.pointerEvents = 'auto';
+      }
+    });
+  </script>
+</body>
+
+</html>
