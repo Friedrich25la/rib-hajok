@@ -13,7 +13,6 @@
       box-sizing: border-box;
     }
 
-    /* Ez segít a böngészőnek, hogy tudja, ez egy szám */
     @property --progress-scroll {
       syntax: "<number>";
       inherits: true;
@@ -22,17 +21,15 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0a5565;
+      background-color: #1c5151;
       color: white;
-      /* Reszponzív javítás */
       overflow-x: hidden;
     }
 
-    /* --- 1. RÉSZ: BEVEZETŐ STÍLUSAI (SAFARI JAVÍTOTT) --- */
+    /* --- 1. RÉSZ: BEVEZETŐ STÍLUSAI --- */
 
     .intro-container {
       height: 300vh;
-      /* Hosszú pálya a görgetéshez */
     }
 
     .sticky-wrapper {
@@ -40,13 +37,7 @@
       top: 0;
       height: 100vh;
       width: 100%;
-      /* Javítva 100vw-ről */
       overflow: hidden;
-
-      /* === SAFARI JAVÍTÁS ===
-             * Kivettük innen a CSS animation-timeline sorokat.
-             * Ezt mostantól a JavaScript vezérli lent.
-             */
     }
 
     .text-container {
@@ -73,9 +64,7 @@
     }
 
     .text {
-      /* Itt használjuk a JS által számolt értéket */
       --offset-x-base: calc(100% * var(--progress-scroll));
-
       font-size: clamp(1.2rem, 5vw, 2.5rem);
       font-weight: 900;
       position: relative;
@@ -98,8 +87,69 @@
       transform: translateX(var(--offset-x));
       width: 100%;
       display: inline-block;
-      /* Finomítás: hardveres gyorsítás a simább animációért */
       will-change: transform;
+    }
+
+    /* === ÚJ RÉSZ: GÖRGESS JELZÉS STÍLUSA === */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.6);
+      /* Diszkrét világosszürke */
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 400;
+      z-index: 20;
+      pointer-events: none;
+      /* Hogy ne zavarja a kattintást */
+
+      /* OKOS TRÜKK: 
+               Ahogy elkezd görgetni a felhasználó (nő a --progress-scroll értéke),
+               úgy csökken az átlátszóság. Amint eléri a görgetés a 25%-ot, teljesen eltűnik.
+            */
+      opacity: calc(1 - (var(--progress-scroll) * 4));
+      transition: opacity 0.1s;
+    }
+
+    /* A nyíl animációja */
+    .scroll-arrow {
+      width: 16px;
+      height: 16px;
+      border-right: 2px solid rgba(255, 255, 255, 0.6);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+      transform: rotate(45deg);
+      animation: scroll-bounce 2s infinite;
+    }
+
+    @keyframes scroll-bounce {
+
+      0%,
+      20%,
+      50%,
+      80%,
+      100% {
+        transform: rotate(45deg) translate(0, 0);
+        opacity: 0.6;
+      }
+
+      40% {
+        transform: rotate(45deg) translate(-5px, -5px);
+        /* Felfele */
+        opacity: 1;
+      }
+
+      60% {
+        transform: rotate(45deg) translate(5px, 5px);
+        /* Lefele */
+        opacity: 1;
+      }
     }
 
     /* --- 2. RÉSZ: LANDING PAGE (SLIDER) STÍLUSAI --- */
@@ -578,6 +628,12 @@
           <div class="text-inner">tekintsék meg kínálatunkat!</div>
         </div>
       </div>
+
+      <div class="scroll-indicator">
+        <span>Görgess!</span>
+        <div class="scroll-arrow"></div>
+      </div>
+
     </div>
   </div>
 
@@ -594,7 +650,7 @@
           <div class="slide-number">01</div>
           <div class="car-brand">RIB 330</div>
           <div class="car-name">
-            <a href="https://www.trinexus.hu/Dawn-Marine-RIB-330C" target="_blank" rel="noopener noreferrer" class="product-link">
+            <a href="ide-jon-a-link-1.html" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 330C
             </a>
           </div>
@@ -627,7 +683,7 @@
           <div class="slide-number">02</div>
           <div class="car-brand">RIB 390</div>
           <div class="car-name">
-            <a href="https://www.trinexus.hu/Dawn-Marine-RIB-390C-feher" target="_blank" rel="noopener noreferrer" class="product-link">
+            <a href="ide-jon-a-link-2.html" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 390C Teak
             </a>
           </div>
@@ -659,7 +715,7 @@
           <div class="slide-number">03</div>
           <div class="car-brand">RIB 390</div>
           <div class="car-name">
-            <a href="https://www.trinexus.hu/spd/832390/Dawn-Marine-RIB-390C-fekete-feher" target="_blank" rel="noopener noreferrer" class="product-link">
+            <a href="ide-jon-a-link-3.html" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 390C fekete-fehér
             </a>
           </div>
@@ -695,7 +751,7 @@
           <div class="slide-number">04</div>
           <div class="car-brand">RIB 520</div>
           <div class="car-name">
-            <a href="https://www.trinexus.hu/Dawn-Marine-RIB-520E" target="_blank" rel="noopener noreferrer" class="product-link">
+            <a href="ide-jon-a-link-4.html" target="_blank" rel="noopener noreferrer" class="product-link">
               Dawn Marine RIB 520E Teak
             </a>
           </div>
@@ -726,25 +782,19 @@
 
   <script>
     // === BEVEZETŐ ANIMÁCIÓ JS (SAFARI JAVÍTÁS) ===
-    // Ez helyettesíti a nem támogatott CSS scroll-timeline-t.
     document.addEventListener('scroll', () => {
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
-      // Az animáció az első 100vh görgetés alatt történjen meg
-      // (Mivel a sticky elem 100vh magas, a pálya 300vh)
 
-      // 0 és 1 közötti értéket számolunk a görgetés alapján
       let progress = scrollTop / windowHeight;
 
-      // Biztosítjuk, hogy 0 és 1 között maradjon
       if (progress < 0) progress = 0;
       if (progress > 1) progress = 1;
 
-      // Beállítjuk a CSS változót, amit a szövegek figyelnek
       document.body.style.setProperty('--progress-scroll', progress);
     });
 
-    // === SLIDER JS (VÁLTOZATLAN) ===
+    // === SLIDER JS ===
     class AccordionSlider {
       constructor() {
         this.slides = document.querySelectorAll(".slide");
